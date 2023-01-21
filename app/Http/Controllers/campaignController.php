@@ -13,17 +13,25 @@ class campaignController extends Controller
     public function index()
     {
         try {
-            return response()->json(Campaign::all());
+            $campaigns = Campaign::all();
+            if (!$campaigns->count()) {
+                return response()->json(['error' => 'No campaign found.'], 400);
+            }
+            return response()->json(["data" => $campaigns]);
         } catch (\Exception $e) {
             return response()->json($e->getMessage(), 500);
         }
     }
+
     //=========================Get a single campaign ======================
     //=====================================================================
     public function show(Campaign $campaign)
     {
+        if (is_null($campaign)) {
+            return response()->json(['error' => 'No campaign found.'], 400);
+        }
         try {
-            return response()->json($campaign);
+            return response()->json(["data" => $campaign]);
         } catch (\Exception $e) {
             return response()->json($e->getMessage(), 500);
         }
@@ -57,7 +65,7 @@ class campaignController extends Controller
                 "creative_upload" => $cloudinaryImageUrl,
                 "creative_upload_id" => $cloudinaryImagePublicId
             ]);
-            return response()->json("Campign Created");
+            return response()->json(["data" => "Campign Created"]);
         } catch (\Exception $e) {
             return response()->json($e->getMessage(), 500);
         }
@@ -90,7 +98,7 @@ class campaignController extends Controller
                 "creative_upload_id" => $cloudinaryImagePublicId
             ]);
 
-            return response()->json("Campign Updated");
+            return response()->json(["data" => "Campign Updated"]);
         } catch (\Exception $e) {
             return response()->json($e->getMessage(), 500);
         }
@@ -101,10 +109,13 @@ class campaignController extends Controller
     {
         try {
             $campaignId = Campaign::find($id);
+            if (is_null($campaignId)) {
+                return response()->json(['error' => 'No campaign found.'], 400);
+            }
             $cloudinaryImagePublicId = $campaignId->creative_upload_id;
             Cloudinary::destroy($cloudinaryImagePublicId);
             Campaign::destroy($id);
-            return response()->json("Campign Deleted");
+            return response()->json(["data" => "Campign Deleted"]);
         } catch (\Exception $e) {
             return response()->json($e->getMessage(), 500);
         }
